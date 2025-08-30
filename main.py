@@ -33,7 +33,7 @@ class MediaItem():
 
 
 class MediaSequence:
-    def __init__(self, dDur: int = 3000):
+    def __init__(self, dDur: int = 10000):
         self.seq: list[MediaItem] = []
         self.defaultDuration = dDur  # default duration of image still in ms
         self._len = len(self.seq)
@@ -52,6 +52,9 @@ class MediaSequence:
                     self.seq.append(
                         MediaItem(name, True, self.defaultDuration))
                 case "jpg":
+                    self.seq.append(
+                        MediaItem(name, True, self.defaultDuration))
+                case "jpeg":
                     self.seq.append(
                         MediaItem(name, True, self.defaultDuration))
                 case "mp4":
