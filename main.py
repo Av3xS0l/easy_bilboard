@@ -10,6 +10,9 @@ from PyQt5.QtGui import QImage, QPainter
 from PIL import Image, ImageFilter
 
 
+from modules.gdrive_api import *
+
+
 def perror(str: str):
     print(f"\033[91m{str}\033[0m")
 
@@ -196,15 +199,36 @@ class ContentViewer(QWidget):
 
 
 def main():
+    '''
+    1. Reizi minūtē pullo no Gdrive foldera sarakstu ar failiem
+    2. Salīdzina ar sarakstu, kurš atrodas iestatītajā galerijas folderī
+    3. Preprocessē bildes un saglabā tās lietošanai
+    4. Rāda slaidrādi
+    '''
+    FOLDER_ID = getGdriveID()
+    LOCAL_PATH = getLocalPath()
 
-    app = QApplication(sys.argv)
-    screen = app.screens()[0 if not USE_EXT_DISPLAY else 1]
+    # clear the folder on startup
+    files_to_delete = set(os.listdir(LOCAL_PATH))
+    if files_to_delete:
+        for file_name in files_to_delete:
+            local_file_path = os.path.join(LOCAL_PATH, file_name)
+            # Use os.path.isfile to avoid deleting directories/sub-folders
+            if os.path.isfile(local_file_path): 
+                os.remove(local_file_path)
+    
 
-    window: ContentViewer = ContentViewer(screen)
-    window.showFullScreen()
-    window.start()
+    stored_items = []
+    stored_items = fetchFiles(LOCAL_PATH, FOLDER_ID, stored_items)
 
-    sys.exit(app.exec_())
+    # app = QApplication(sys.argv)
+    # screen = app.screens()[0 if not USE_EXT_DISPLAY else 1]
+
+    # window: ContentViewer = ContentViewer(screen)
+    # window.showFullScreen()
+    # window.start()
+
+    # sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

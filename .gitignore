@@ -1,3 +1,9 @@
 *.mp4
 *.png
 *.jpg
+*.jpeg
+*.gif
+*.json
+EASY_BILBOARD/*
+
+.env
