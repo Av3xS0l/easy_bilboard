@@ -1,9 +1,12 @@
+modules/__pycache__/*
+EASY_BILBOARD/*
 *.mp4
 *.png
 *.jpg
 *.jpeg
 *.gif
 *.json
-EASY_BILBOARD/*
 
-.env
+
+*.env
+

@@ -8,24 +8,18 @@ import sys
 import os
 from PyQt5.QtGui import QImage, QPainter
 from PIL import Image, ImageFilter
-
+from dotenv import load_dotenv
 
 from modules.gdrive_api import *
+
+load_dotenv()
+FOLDER_ID = os.getenv("FOLDER_ID")
+LOCAL_PATH = os.getenv("LOCAL_PATH")
+USE_EXT_DISPLAY = os.getenv("USE_EXT_DISPLAY")
 
 
 def perror(str: str):
     print(f"\033[91m{str}\033[0m")
-
-
-# program constants
-USE_EXT_DISPLAY: bool = False
-PATH_TO_MEDIA: str = os.path.expanduser("~") + "/bilboard"
-try:
-    if not os.path.exists(PATH_TO_MEDIA):
-        raise Exception()
-except:
-    os.mkdir(os.path.expanduser("~") + "/bilboard")
-    perror("Directory did not exist. created")
 
 
 class MediaItem():
@@ -46,7 +40,7 @@ class MediaSequence:
 
     def update(self):
         self.seq = []
-        for file in os.listdir(PATH_TO_MEDIA):
+        for file in os.listdir(LOCAL_PATH):
 
             name = file
             extention = name.split(".")[-1]
@@ -58,6 +52,9 @@ class MediaSequence:
                     self.seq.append(
                         MediaItem(name, True, self.defaultDuration))
                 case "jpeg":
+                    self.seq.append(
+                        MediaItem(name, True, self.defaultDuration))
+                case "gif":
                     self.seq.append(
                         MediaItem(name, True, self.defaultDuration))
                 case "mp4":
@@ -103,9 +100,9 @@ class ContentViewer(QWidget):
     def _show_current(self):
         item: MediaItem = self.media_sequence[self.index]
         if item.isImage:
-            self._show_image(f"{PATH_TO_MEDIA}/{item.name}", item.duration)
+            self._show_image(f"{LOCAL_PATH}/{item.name}", item.duration)
         else:
-            self._show_video(f"{PATH_TO_MEDIA}/{item.name}")
+            self._show_video(f"{LOCAL_PATH}/{item.name}")
 
     def _show_image(self, path, duration):
         if not os.path.exists(path):
@@ -205,8 +202,6 @@ def main():
     3. Preprocessē bildes un saglabā tās lietošanai
     4. Rāda slaidrādi
     '''
-    FOLDER_ID = getGdriveID()
-    LOCAL_PATH = getLocalPath()
 
     # clear the folder on startup
     files_to_delete = set(os.listdir(LOCAL_PATH))
@@ -214,21 +209,20 @@ def main():
         for file_name in files_to_delete:
             local_file_path = os.path.join(LOCAL_PATH, file_name)
             # Use os.path.isfile to avoid deleting directories/sub-folders
-            if os.path.isfile(local_file_path): 
+            if os.path.isfile(local_file_path):
                 os.remove(local_file_path)
-    
 
     stored_items = []
     stored_items = fetchFiles(LOCAL_PATH, FOLDER_ID, stored_items)
 
-    # app = QApplication(sys.argv)
-    # screen = app.screens()[0 if not USE_EXT_DISPLAY else 1]
+    app = QApplication(sys.argv)
+    screen = app.screens()[0 if not int(USE_EXT_DISPLAY) else 1]
 
-    # window: ContentViewer = ContentViewer(screen)
-    # window.showFullScreen()
-    # window.start()
+    window: ContentViewer = ContentViewer(screen)
+    window.showFullScreen()
+    window.start()
 
-    # sys.exit(app.exec_())
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

@@ -11,10 +11,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from dotenv import load_dotenv
 from dataclasses import dataclass
-
-load_dotenv()
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
@@ -24,22 +21,6 @@ class File:
     ID: str
     name: str
     mimeType: str
-
-
-def getGdriveID() -> str:
-    try:
-        return os.getenv("EB_FOLDER_ID")
-
-    except:
-        raise KeyError
-
-
-def getLocalPath() -> str:
-    try:
-        return os.getenv("EB_LOCAL_PATH")
-
-    except:
-        raise KeyError
 
 
 def authorizeGdrive():
