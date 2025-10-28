@@ -1,4 +1,4 @@
-modules/__pycache__/*
+**/__pycache__/
 EASY_BILBOARD/*
 *.mp4
 *.png

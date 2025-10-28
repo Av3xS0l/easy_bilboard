@@ -6,7 +6,7 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PIL import Image
 import sys
 import os
-from PyQt5.QtGui import QImage, QPainter
+from PyQt5.QtGui import QImage, QPainter, QMovie
 from PIL import Image, ImageFilter
 from dotenv import load_dotenv
 
@@ -22,16 +22,9 @@ def perror(str: str):
     print(f"\033[91m{str}\033[0m")
 
 
-class MediaItem():
-    def __init__(self, name: str, isImage: bool, dur: int = 0):
-        self.name: str = name
-        self.isImage: bool = isImage  # true if image. False if video
-        self.duration: int = dur  # Duration in ms
-
-
 class MediaSequence:
     def __init__(self, dDur: int = 10000):
-        self.seq: list[MediaItem] = []
+        self.seq: list[File] = []
         self.defaultDuration = dDur  # default duration of image still in ms
         self._len = len(self.seq)
 
@@ -39,29 +32,7 @@ class MediaSequence:
         return self.seq[item]
 
     def update(self):
-        self.seq = []
-        for file in os.listdir(LOCAL_PATH):
-
-            name = file
-            extention = name.split(".")[-1]
-            match extention:
-                case "png":
-                    self.seq.append(
-                        MediaItem(name, True, self.defaultDuration))
-                case "jpg":
-                    self.seq.append(
-                        MediaItem(name, True, self.defaultDuration))
-                case "jpeg":
-                    self.seq.append(
-                        MediaItem(name, True, self.defaultDuration))
-                case "gif":
-                    self.seq.append(
-                        MediaItem(name, True, self.defaultDuration))
-                case "mp4":
-                    self.seq.append(MediaItem(name, False))
-                case _:
-                    perror(
-                        f"Unrecognized file name extention: {extention}. Skipping!")
+        self.seq = fetchFiles(LOCAL_PATH, FOLDER_ID, self.seq)
         self._len = len(self.seq)
 
 
@@ -70,7 +41,7 @@ class ContentViewer(QWidget):
         super().__init__()
         # set screen for the display to show
         self.screen = screen
-        # TODO temporarry
+
         self.media_sequence: MediaSequence = MediaSequence()
         self.media_sequence.update()
 
@@ -98,11 +69,20 @@ class ContentViewer(QWidget):
         self._show_current()
 
     def _show_current(self):
-        item: MediaItem = self.media_sequence[self.index]
-        if item.isImage:
-            self._show_image(f"{LOCAL_PATH}/{item.name}", item.duration)
-        else:
-            self._show_video(f"{LOCAL_PATH}/{item.name}")
+        item: File = self.media_sequence[self.index]
+        fType, subtype = item.mimeType.split("/")
+        match fType:
+            case "image":
+                if subtype == "gif":
+                    # funky gif logic -_-
+                    self._show_gif(f"{LOCAL_PATH}/{item.name}", self.media_sequence.defaultDuration)
+                else:
+                    # normal image
+                    self._show_image(f"{LOCAL_PATH}/{item.name}", self.media_sequence.defaultDuration)
+            case "video":
+                self._show_video(f"{LOCAL_PATH}/{item.name}")
+            case _:
+                print(f"Unrecognized mimeType: {item.mimeType}!")
 
     def _show_image(self, path, duration):
         if not os.path.exists(path):
@@ -171,6 +151,34 @@ class ContentViewer(QWidget):
         self.stack.setCurrentWidget(self.videoWidget)
         self.videoPlayer.play()
 
+    def _show_gif(self, path, duration):
+            if not os.path.exists(path):
+                self._next()
+                return
+
+            # In case a previous image was set
+            self.imageLabel.setPixmap(QPixmap())
+
+            movie = QMovie(path)
+            if not movie.isValid():
+                perror(f"Could not load gif: {path}")
+                self._next()
+                return
+
+            self.imageLabel.setMovie(movie)
+
+            # Scale the movie to fit the screen while keeping aspect ratio
+            screen_size = self.screen.size()
+            movie_size = movie.frameRect().size()
+            if movie_size.isValid():
+                scaled_size = movie_size.scaled(screen_size, Qt.KeepAspectRatio)
+                movie.setScaledSize(scaled_size)
+
+            movie.start()
+            self.stack.setCurrentWidget(self.imageLabel)
+            QTimer.singleShot(int(duration), self._next)
+
+
     def _on_media_status(self, status):
         if status == QMediaPlayer.EndOfMedia:
             self.videoPlayer.stop()
@@ -181,7 +189,6 @@ class ContentViewer(QWidget):
         if self.index >= self.media_sequence._len:
             self.index = 0
             self.media_sequence.update()
-
         self._show_current()
 
     def resizeEvent(self, event):
@@ -196,12 +203,7 @@ class ContentViewer(QWidget):
 
 
 def main():
-    '''
-    1. Reizi minūtē pullo no Gdrive foldera sarakstu ar failiem
-    2. Salīdzina ar sarakstu, kurš atrodas iestatītajā galerijas folderī
-    3. Preprocessē bildes un saglabā tās lietošanai
-    4. Rāda slaidrādi
-    '''
+    
 
     # clear the folder on startup
     files_to_delete = set(os.listdir(LOCAL_PATH))
@@ -211,9 +213,6 @@ def main():
             # Use os.path.isfile to avoid deleting directories/sub-folders
             if os.path.isfile(local_file_path):
                 os.remove(local_file_path)
-
-    stored_items = []
-    stored_items = fetchFiles(LOCAL_PATH, FOLDER_ID, stored_items)
 
     app = QApplication(sys.argv)
     screen = app.screens()[0 if not int(USE_EXT_DISPLAY) else 1]
