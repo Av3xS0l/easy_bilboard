@@ -32,7 +32,7 @@ pip install -r requirements.pip
 
 # Use the current working directory to guarantee an absolute path for cron
 SCRIPT_DIR=$(pwd)
-COUNTER_SCRIPT="$SCRIPT_DIR/counter.sh"
+COUNTER_SCRIPT="$SCRIPT_DIR/counter_init.sh"
 
 if [ -f "$COUNTER_SCRIPT" ]; then
     # Make the script executable
