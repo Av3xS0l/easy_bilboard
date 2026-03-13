@@ -209,6 +209,8 @@ def main():
     files_to_delete = set(os.listdir(LOCAL_PATH))
     if files_to_delete:
         for file_name in files_to_delete:
+            if file_name.startswith("_COUNT"):
+                continue
             local_file_path = os.path.join(LOCAL_PATH, file_name)
             # Use os.path.isfile to avoid deleting directories/sub-folders
             if os.path.isfile(local_file_path):
