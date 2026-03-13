@@ -25,3 +25,27 @@ fi
 ${PYTHON_CMD} -m venv EASY_BILBOARD
 source ./EASY_BILBOARD/bin/activate
 pip install -r requirements.pip
+
+# ==========================================
+# Automated Counter & Cron Job Configuration
+# ==========================================
+
+# Use the current working directory to guarantee an absolute path for cron
+SCRIPT_DIR=$(pwd)
+COUNTER_SCRIPT="$SCRIPT_DIR/counter.sh"
+
+if [ -f "$COUNTER_SCRIPT" ]; then
+    # Make the script executable
+    chmod +x "$COUNTER_SCRIPT"
+    
+    # Check if the cron job already exists to avoid duplicates
+    if ! crontab -l 2>/dev/null | grep -q "$COUNTER_SCRIPT"; then
+        # Append the new cron job silently
+        (crontab -l 2>/dev/null; echo "0 0 * * * $COUNTER_SCRIPT") | crontab -
+        echo "Successfully added $COUNTER_SCRIPT to crontab."
+    else
+        echo "Cron job for $COUNTER_SCRIPT is already configured. Skipping."
+    fi
+else
+    echo "Warning: $COUNTER_SCRIPT not found in $SCRIPT_DIR. Cron setup skipped."
+fi

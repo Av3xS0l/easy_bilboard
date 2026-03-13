@@ -87,6 +87,8 @@ def fetchFiles(local_path: str, folder_id: str, cur_items: list) -> list[File]:
         for item in to_delete:
             file_id = item.ID
             file_name = item.name
+            if file_name.startswith("_COUNT"):
+                continue
             local_file_path = os.path.join(local_path, file_name)
             if os.path.isfile(local_file_path): 
                 os.remove(local_file_path)
