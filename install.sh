@@ -2,10 +2,10 @@
 # Script to install dependencies on Debian/Ubuntu or Arch Linux based systems
 
 # Python and Multimedia packages for Debian/Ubuntu (apt)
-APT_PACKAGES="python3-pip python3-venv libqt5multimedia5-plugins libpulse-mainloop-glib0 gstreamer1.0-plugins-base-apps gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-plugins-good gstreamer1.0-plugins-base gstreamer1.0-libav gstreamer1.0-tools"
+APT_PACKAGES="python3-pip python3-venv libqt5multimedia5-plugins libpulse-mainloop-glib0 gstreamer1.0-plugins-base-apps gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-plugins-good gstreamer1.0-plugins-base gstreamer1.0-libav gstreamer1.0-tools imagemagick"
 
 # Python and Multimedia packages for Arch Linux (pacman)
-PACMAN_PACKAGES="python qt5-multimedia libpulse gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly gst-libav"
+PACMAN_PACKAGES="python qt5-multimedia libpulse gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly gst-libav imagemagick"
 
 if command -v apt &> /dev/null; then
     # Debian based system
@@ -32,7 +32,7 @@ pip install -r requirements.pip
 
 # Use the current working directory to guarantee an absolute path for cron
 SCRIPT_DIR=$(pwd)
-COUNTER_SCRIPT="$SCRIPT_DIR/counter.sh"
+COUNTER_SCRIPT="$SCRIPT_DIR/counter_init.sh"
 
 if [ -f "$COUNTER_SCRIPT" ]; then
     # Make the script executable

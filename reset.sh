@@ -1,13 +1,20 @@
 #!/bin/bash
 
-OUTPUT_DIR="."
-ENV_FILE="$OUTPUT_DIR/.env"
-NEW_DATE=$(date +%Y-%m-%d)
+ENV_FILE="./.env"
 
-touch "$ENV_FILE"
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
 
-if grep -q "START_DATE=" "$ENV_FILE"; then
-    sed -i "s/^.*START_DATE=.*/START_DATE=$NEW_DATE/" "$ENV_FILE"
+    NEW_DATE=$(date +%Y-%m-%d)
+    if [ "$LAST_INCIDENT" = "" ]; then
+        echo "LAST_INCIDENT=$NEW_DATE" >> "$ENV_FILE"
+    else
+        sed -i "s/^.*LAST_INCIDENT=.*/LAST_INCIDENT=$NEW_DATE/" "$ENV_FILE"
+    fi
+
+    ./counter_init.sh
+    echo "Successful reset"
 else
-    echo "START_DATE=$NEW_DATE" >> "$ENV_FILE"
+    echo "No env file detected"
+    exit 1
 fi
