@@ -40,7 +40,7 @@ def authorizeGdrive():
     return build('drive', 'v3', credentials=creds)
 
 
-def downloadFile(service, file_id: str, file_name: str, local_path: str):
+def downloadFile(service, file_id: str, local_path: str):
     "Downloads a single file"
     request = service.files().get_media(fileId=file_id)
     fh = io.BytesIO()
@@ -69,6 +69,7 @@ def fetchFiles(local_path: str, folder_id: str, cur_items: list) -> list[File]:
 
 
     drive_q_items = results.get('files', [])
+    
     drive_items: list[File] = []
     for item in drive_q_items:
         drive_items.append(File(item['id'], item['name'], item['mimeType']))
@@ -81,14 +82,12 @@ def fetchFiles(local_path: str, folder_id: str, cur_items: list) -> list[File]:
             file_id = item.ID
             file_name = item.name
             local_file_path = os.path.join(local_path, file_name)
-            downloadFile(service, file_id, file_name, local_file_path)
+            downloadFile(service, file_id, local_file_path)
     
     if to_delete:
         for item in to_delete:
             file_id = item.ID
             file_name = item.name
-            if file_name.startswith("_COUNT"):
-                continue
             local_file_path = os.path.join(local_path, file_name)
             if os.path.isfile(local_file_path): 
                 os.remove(local_file_path)

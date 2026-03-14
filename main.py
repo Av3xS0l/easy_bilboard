@@ -16,7 +16,9 @@ load_dotenv()
 FOLDER_ID = os.getenv("FOLDER_ID")
 LOCAL_PATH = os.getenv("LOCAL_PATH")
 USE_EXT_DISPLAY = os.getenv("USE_EXT_DISPLAY")
+LAST_INCIDENT = os.getenv("LAST_INCIDENT")
 
+SPECIAL_NAMES = {'_COUNT.png'}
 
 def perror(str: str):
     print(f"\033[91m{str}\033[0m")
@@ -33,7 +35,14 @@ class MediaSequence:
 
     def update(self):
         self.seq = fetchFiles(LOCAL_PATH, FOLDER_ID, self.seq)
+        locally_stored = set(os.listdir(LOCAL_PATH))
+        print(locally_stored)
+        print((locally_stored & SPECIAL_NAMES))
+        for file in (locally_stored & SPECIAL_NAMES):
+            print("file_added")
+            self.seq.append(File(hash(file), file, 'image/png')) # currently only suports local images
         self._len = len(self.seq)
+        print(self.seq)
 
 
 class ContentViewer(QWidget):
@@ -203,14 +212,12 @@ class ContentViewer(QWidget):
 
 
 def main():
-    
-
     # clear the folder on startup
     files_to_delete = set(os.listdir(LOCAL_PATH))
     if files_to_delete:
         for file_name in files_to_delete:
-            if file_name.startswith("_COUNT"):
-                continue
+            if file_name in SPECIAL_NAMES:
+                continue    # Skipping special names
             local_file_path = os.path.join(LOCAL_PATH, file_name)
             # Use os.path.isfile to avoid deleting directories/sub-folders
             if os.path.isfile(local_file_path):
