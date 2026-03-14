@@ -1,6 +1,6 @@
 # Easy_bilboard
 A bilboard app to turn a computer into a digital bilboard.  
-Made primarily for linux.
+Made primarily for linux. Other platforms are not tested.
 
 # Running project
 ## Linux
