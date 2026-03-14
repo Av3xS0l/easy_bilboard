@@ -5,7 +5,7 @@ Made primarily for linux.
 # Running project
 ## Linux
 1. The folowing must be run as root/admin to install the dependencies:  
-```bash(sudo ./install.sh)```  
+```sudo ./install.sh```  
 2. Set all of the environment variables in `.env` file in project's directory.  
     ```
     FOLDER_ID={google drive folder id}
